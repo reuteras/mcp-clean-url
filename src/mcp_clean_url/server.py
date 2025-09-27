@@ -42,7 +42,7 @@ async def get_clean_url(url: str) -> str:
         elif soup.find(name="h1") is not None and soup.h1 and not None and soup.h1.string is not None:
             title: str = soup.h1.string
             if title is not None:
-                text += f"Title: {title}\n\nURL source: {url}\n\nMarkdown content:\n\n"                
+                text += f"Title: {title}\n\nURL source: {url}\n\nMarkdown content:\n\n"
         text += md(soup=soup, strip=["script", "style"], bullets="-", codeblock="```", heading_style="ATX")
     return text
 
