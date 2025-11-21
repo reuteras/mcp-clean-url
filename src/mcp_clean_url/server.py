@@ -13,12 +13,15 @@ def md(soup, **options) -> str:
     """Convert soup to markdown."""
     return MarkdownConverter(**options).convert_soup(soup=soup)
 
+
 async def get_clean_url(url: str) -> str:
     """Get clean data from url."""
     client = AsyncClient()
     text: str = ""
 
-    matches: re.Match[str] | None = re.match(pattern=r"^https://github.com/([^/]+)/([^/]+)/blob/([^/]+)/(.*)$", string=url)
+    matches: re.Match[str] | None = re.match(
+        pattern=r"^https://github.com/([^/]+)/([^/]+)/blob/([^/]+)/(.*)$", string=url
+    )
     if matches is not None:
         try:
             owner: str = matches.group(1)
@@ -35,26 +38,44 @@ async def get_clean_url(url: str) -> str:
         response: Response = await client.get(url=url)
         response.raise_for_status()
         soup = BeautifulSoup(markup=response.text, features="html.parser")
-        if soup.find(name="title") is not None and soup.title and not None and soup.title.string is not None:
+        if (
+            soup.find(name="title") is not None
+            and soup.title
+            and not None
+            and soup.title.string is not None
+        ):
             title: str = soup.title.string
             if title is not None:
                 text += f"Title: {title}\n\nURL source: {url}\n\nMarkdown content:\n\n"
-        elif soup.find(name="h1") is not None and soup.h1 and not None and soup.h1.string is not None:
+        elif (
+            soup.find(name="h1") is not None
+            and soup.h1
+            and not None
+            and soup.h1.string is not None
+        ):
             title: str = soup.h1.string
             if title is not None:
                 text += f"Title: {title}\n\nURL source: {url}\n\nMarkdown content:\n\n"
-        text += md(soup=soup, strip=["script", "style"], bullets="-", codeblock="```", heading_style="ATX")
+        text += md(
+            soup=soup,
+            strip=["script", "style"],
+            bullets="-",
+            codeblock="```",
+            heading_style="ATX",
+        )
     return text
 
 
 # Create a named server
 mcp = FastMCP(name="Get clean url via MCP", dependencies=["toml"])
 
+
 @mcp.tool()
 async def clean_url(url: str) -> str:
     """Get clean url via MCP."""
     result: str = await get_clean_url(url=url)
     return result
+
 
 if __name__ == "__main__":
     import asyncio
